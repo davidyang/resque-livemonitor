@@ -37,32 +37,6 @@
       <th>Queue</th>
       <th>Processing</th>
     </tr>
-    <% if workers.empty? %>
-    <tr>
-      <td colspan="4" class='no-data'>Nothing is happening right now...</td>
-    </tr>
-    <% end %>
-
-    <% for worker in workers.sort_by { |w| w.job['run_at'] ? w.job['run_at'] : '' } %>
-      <% job = worker.job %>
-
-      <tr>
-        <td class='icon'><img src="<%=u state = worker.state %>.png" alt="<%= state %>" title="<%= state %>"></td>
-        <% host, pid, queues = worker.to_s.split(':') %>
-        <td class='where'><a href="<%=u "/workers/#{worker}" %>"><%= host %>:<%= pid %></a></td>
-        <td class='queues queue'>
-          <a class="queue-tag" href="<%=u "/queues/#{job['queue']}" %>"><%= job['queue'] %></a>
-        </td>
-        <td class='process'>
-          <% if job['queue'] %>
-            <code><%= job['payload']['class'] %></code>
-            <small><a class="queue time" href="<%=u "/working/#{worker}" %>"><%= job['run_at'] %></a></small>
-          <% else %>
-            <span class='waiting'>Waiting for a job...</span>
-          <% end %>
-        </td>
-      </tr>
-    <% end %>
   </table>
 
 <% end %>

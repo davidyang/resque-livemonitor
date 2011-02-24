@@ -3,8 +3,28 @@
 <%= partial :working %>
 <%= poll %>
 
+<script src="http://ajax.cdnjs.com/ajax/libs/underscore.js/1.1.4/underscore-min.js"></script>
+
+<script id="worker" type="text/html">
+  <tr id="{{ event.pid }}">
+    <td class='icon'><img src="" alt="" title=""></td>
+    <td class='where'><a href="#">{{event.host}}:{{ event.pid }}</a></td>
+    <td class='queues queue'>
+      <a class="queue-tag" href="#">{{ event.queue }}</a>
+    </td>
+    <td class='process'>
+        <code>Starting...</code>
+    </td>
+  </tr>
+</script>
+
 <script>
   var socket = new WebSocket("ws://localhost:8080");
+  _.templateSettings = {
+      interpolate : /\{\{(.+?)\}\}/g
+    };
+
+  var worker_tmpl = _.template($('#worker').text());
 
   socket.onopen = function() {
     console.log("socket open!");
@@ -15,14 +35,21 @@
 
     var event = JSON.parse(msg.data)
     var container = $("#queue_" + event.queue);
+    var workers = $("table.workers");
+
     console.log(event.event);
     console.log(container);
     if(event.event == "enqueued") {
       container.prepend("<img src='/dot.png'/>");
+      } else if(event.event == "log") {
+      $('.process code', '#'+event.pid).text(event.message);
     } else if(event.event == "finished") {
       container.find('img:first').remove();
+      $('#'+event.pid).fadeOut(1000);
     } else if(event.event == "started") {
-      // ...
+    console.log("started an event");
+    worker_html = worker_tmpl({ event : event });
+      workers.append(worker_html);
     } else {
       console.log("Not sure what to do with " + msg.data);
     }
